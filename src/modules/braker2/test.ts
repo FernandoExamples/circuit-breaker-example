@@ -1,9 +1,10 @@
 import { delay } from '../../helpers/datetime'
 import axios from 'axios'
-import CircuitBreaker from 'opossum'
 import { RetryCircuitBraker } from './RetryCircuitBraker'
+import logger from '../../helpers/logger'
 
 async function asyncFunctionThatCouldFail() {
+  logger.debug('Haciendo peticion')
   await delay(2000)
   const response = await axios.get('http://localhost:3000')
   return true
@@ -12,7 +13,11 @@ async function asyncFunctionThatCouldFail() {
 const retryCircuit = new RetryCircuitBraker(asyncFunctionThatCouldFail, {
   timeout: 3000,
   errorThresholdPercentage: 50,
-  resetTimeout: 4000,
-  waitTime: 1000,
+  resetTimeout: 12000,
+  maxRetries: 3,
 })
-retryCircuit.tryAction(5000).then((a) => console.log(`La respesta: ${a}`))
+
+retryCircuit
+  .tryAction()
+  .then((a) => console.log(`La respesta: ${a}`))
+  .catch((e) => logger.error(e.message))
