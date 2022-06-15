@@ -26,6 +26,7 @@
     "helmet": "^5.1.0",
     "module-alias": "^2.2.2",
     "morgan": "^1.10.0",
+    "opossum": "^6.3.0",
     "rate-limiter-flexible": "^2.3.7",
     "winston": "^3.7.2"
   },
@@ -39,6 +40,7 @@
     "@types/module-alias": "^2.0.1",
     "@types/morgan": "^1.9.3",
     "@types/node": "^17.0.44",
+    "@types/opossum": "^6.2.2",
     "install": "^0.13.0",
     "npm": "^8.12.1",
     "prettier": "^2.7.0",

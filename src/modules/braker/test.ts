@@ -1,6 +1,7 @@
 import { CircuitBreaker } from './CircuitBraker'
 import logger from '../../helpers/logger'
 import axios from 'axios'
+import { delay } from '../../helpers/datetime'
 
 const circuitBreaker = new CircuitBreaker<boolean>(failureFunction, {
   timeout: 2000,
@@ -13,15 +14,9 @@ const circuitBreaker = new CircuitBreaker<boolean>(failureFunction, {
 })
 
 async function failureFunction() {
-  await wait(1000)
+  await delay(1000)
   const response = await axios.get('http://localhost:3000')
   return true
-}
-
-export async function wait(ms: number) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms)
-  })
 }
 
 circuitBreaker.exec()

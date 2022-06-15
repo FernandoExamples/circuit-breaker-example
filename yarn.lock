@@ -333,6 +333,13 @@
   "resolved" "https://registry.npmjs.org/@types/node/-/node-17.0.44.tgz"
   "version" "17.0.44"
 
+"@types/opossum@^6.2.2":
+  "integrity" "sha512-VYrqkucrT4nbQZpPxk522+HnhAC5f0EEZNMZATCRQeJwchNwx/GqBscZrHCQvNRx7mlhbgMvZ0DG4NE6BgiVAw=="
+  "resolved" "https://registry.npmjs.org/@types/opossum/-/opossum-6.2.2.tgz"
+  "version" "6.2.2"
+  dependencies:
+    "@types/node" "*"
+
 "@types/qs@*":
   "integrity" "sha512-FGa1F62FT09qcrueBA6qYTrJPVDzah9a+493+o2PCXsesWHIn27G98TsSMs3WPNbZIEj4+VJf6saSFpvD+3Zsw=="
   "resolved" "https://registry.npmjs.org/@types/qs/-/qs-6.9.7.tgz"
@@ -1978,6 +1985,11 @@
   "integrity" "sha512-ur5UIdyw5Y7yEj9wLzhqXiy6GZ3Mwx0yGI+5sMn2r0N0v3cKJvUmFH5yPP+WXh9e0xfyzyJX95D8l088DNFj7A=="
   "resolved" "https://registry.npmjs.org/opener/-/opener-1.5.2.tgz"
   "version" "1.5.2"
+
+"opossum@^6.3.0":
+  "integrity" "sha512-youR7pMTpgnbPJEPruM8Ku1WKUXnjmsK99GC5fkGFrOK8jduY1hvMiooUa3QZg6Xdso03skr37q6Evpt9PZ2cA=="
+  "resolved" "https://registry.npmjs.org/opossum/-/opossum-6.3.0.tgz"
+  "version" "6.3.0"
 
 "p-map@^4.0.0":
   "integrity" "sha512-/bjOqmgETBYB5BoEeGVea8dmvHb2m9GLy1E9W43yeyfP6QQCZGFNa+XRceJEuDB6zqr+gKpIAmlLebMpykw/MQ=="
