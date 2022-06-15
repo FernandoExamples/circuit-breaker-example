@@ -4,14 +4,13 @@ import logger from '../../helpers/logger'
 
 interface Options extends CircuitBreaker.Options {
   waitTime: number
-  onSuccess?: () => void
 }
 
-export class RetryCircuitBraker {
-  private circuitBreaker: CircuitBreaker
+export class RetryCircuitBraker<TI extends unknown[] = unknown[], TR = unknown> {
+  private circuitBreaker: CircuitBreaker<TI, TR>
   private options: Options
 
-  constructor(action: () => Promise<any>, options: Options) {
+  constructor(action: (...args: TI) => Promise<TR>, options: Options) {
     this.circuitBreaker = new CircuitBreaker(action, options)
     this.options = options
 
@@ -20,14 +19,14 @@ export class RetryCircuitBraker {
     this.circuitBreaker.on('close', () => logger.info('Breaker is Close'))
   }
 
-  public async tryAction(timeLimit: number) {
+  public async tryAction(timeLimit: number, ...args: TI): Promise<TR> {
     try {
-      await this.circuitBreaker.fire()
-      if (this.options.onSuccess) this.options.onSuccess()
+      const response = await this.circuitBreaker.fire(...args)
+      return response
     } catch (error: any) {
       logger.warn(`Retrying Action due to ${error.message}...`)
       await delay(this.options.waitTime)
-      await this.tryAction(timeLimit)
+      return await this.tryAction(timeLimit, ...args)
     }
   }
 }
