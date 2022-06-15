@@ -1,10 +1,7 @@
 import { BreakerOptions } from './BreakerOptions'
 import { BreakerState } from './BreakerOptions'
-import axios, { AxiosRequestConfig } from 'axios'
-import logger from '../../helpers/logger'
 
 export class CircuitBreaker {
-  private request: AxiosRequestConfig
   private state: BreakerState
 
   private failureCount: number
@@ -17,8 +14,13 @@ export class CircuitBreaker {
   private successThreshold: number
   private timeout: number
 
-  constructor(request: AxiosRequestConfig, options?: BreakerOptions) {
-    this.request = request
+  //callbacks
+  private failerFunction: () => Promise<any>
+  private fallback?: (err: any) => void
+  private onSuccess?: () => void
+
+  constructor(failerFunction: () => Promise<any>, options?: BreakerOptions) {
+    this.failerFunction = failerFunction
     this.state = BreakerState.GREEN
 
     this.failureCount = 0
@@ -27,7 +29,10 @@ export class CircuitBreaker {
 
     this.failureThreshold = options?.failureThreshold || 3
     this.successThreshold = options?.successThreshold || 2
-    this.timeout = options?.timeout || 3500
+    this.timeout = options?.timeout || 5000
+
+    this.fallback = options?.fallback
+    this.onSuccess = options?.onSuccess
   }
 
   private log(result: string): void {
@@ -40,7 +45,7 @@ export class CircuitBreaker {
     })
   }
 
-  private success(res: any) {
+  private success() {
     this.failureCount = 0
 
     if (this.state == BreakerState.YELLOW) {
@@ -53,11 +58,9 @@ export class CircuitBreaker {
     }
 
     this.log('Success')
-
-    return res
   }
 
-  private failure(res: any) {
+  private failure() {
     this.failureCount++
 
     if (this.failureCount >= this.failureThreshold) {
@@ -67,30 +70,24 @@ export class CircuitBreaker {
     }
 
     this.log('Failure')
-
-    return res
   }
 
-  public async exec(): Promise<any> {
+  public async exec() {
     if (this.state === BreakerState.RED) {
       if (this.nextAttempt <= Date.now()) {
         this.state = BreakerState.YELLOW
       } else {
-        // throw new Error('Circuit suspended. You shall not pass.')
-        logger.error('Circuit suspended. You shall not pass and doing something else.')
+        if (this.fallback) this.fallback(new Error(`Circuit is suspended: ${this.state}`))
       }
     }
 
     try {
-      const response = await axios(this.request)
-
-      if (response.status === 200) {
-        return this.success(response.data)
-      } else {
-        return this.failure(response.data)
-      }
+      await this.failerFunction()
+      this.success()
+      if (this.onSuccess) this.onSuccess()
     } catch (err: any) {
-      return this.failure(err.message)
+      this.failure()
+      if (this.fallback) this.fallback(err)
     }
   }
 }

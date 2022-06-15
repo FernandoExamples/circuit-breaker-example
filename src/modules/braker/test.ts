@@ -1,10 +1,18 @@
 import { CircuitBreaker } from './CircuitBraker'
+import logger from '../../helpers/logger'
+import axios from 'axios'
 
-const circuitBreaker = new CircuitBreaker({
-  method: 'get',
-  url: 'http://localhost:3000',
+const circuitBreaker = new CircuitBreaker(failureFunction, {
+  fallback: (err) => {
+    logger.error(`Error ocurred: ${err}`)
+  },
+  onSuccess: () => {
+    logger.info('Petición exitosa')
+  },
 })
 
-setInterval(() => {
-  circuitBreaker.exec()
-}, 1000)
+async function failureFunction() {
+  const response = await axios.get('http://localhost:3000')
+}
+
+circuitBreaker.exec()
