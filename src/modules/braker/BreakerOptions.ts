@@ -4,12 +4,12 @@ export enum BreakerState {
   YELLOW = 'YELLOW',
 }
 
-export class BreakerOptions {
+export class BreakerOptions<T> {
   constructor(
     public failureThreshold?: number,
     public successThreshold?: number,
     public timeout?: number,
     public fallback?: (err: any) => void,
-    public onSuccess?: () => void
+    public onSuccess?: (response: T) => void
   ) {}
 }

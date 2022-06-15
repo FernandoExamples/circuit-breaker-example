@@ -1,7 +1,7 @@
 import { BreakerOptions } from './BreakerOptions'
 import { BreakerState } from './BreakerOptions'
 
-export class CircuitBreaker {
+export class CircuitBreaker<T> {
   private state: BreakerState
 
   private failureCount: number
@@ -15,11 +15,11 @@ export class CircuitBreaker {
   private timeout: number
 
   //callbacks
-  private failerFunction: () => Promise<any>
+  private failerFunction: () => Promise<T>
   private fallback?: (err: any) => void
-  private onSuccess?: () => void
+  private onSuccess?: (response: T) => void
 
-  constructor(failerFunction: () => Promise<any>, options?: BreakerOptions) {
+  constructor(failerFunction: () => Promise<T>, options?: BreakerOptions<T>) {
     this.failerFunction = failerFunction
     this.state = BreakerState.GREEN
 
@@ -82,9 +82,9 @@ export class CircuitBreaker {
     }
 
     try {
-      await this.failerFunction()
+      const response = await this.failerFunction()
       this.success()
-      if (this.onSuccess) this.onSuccess()
+      if (this.onSuccess) this.onSuccess(response)
     } catch (err: any) {
       this.failure()
       if (this.fallback) this.fallback(err)
