@@ -12,6 +12,7 @@ export class CircuitBreaker<T> {
   // Options
   private failureThreshold: number
   private successThreshold: number
+  private resetTimeout: number
   private timeout: number
 
   //callbacks
@@ -29,7 +30,8 @@ export class CircuitBreaker<T> {
 
     this.failureThreshold = options?.failureThreshold || 3
     this.successThreshold = options?.successThreshold || 2
-    this.timeout = options?.timeout || 5000
+    this.resetTimeout = options?.resetTimeout || 5000
+    this.timeout = options?.timeout || 3000
 
     this.fallback = options?.fallback
     this.onSuccess = options?.onSuccess
@@ -66,10 +68,19 @@ export class CircuitBreaker<T> {
     if (this.failureCount >= this.failureThreshold) {
       this.state = BreakerState.RED
 
-      this.nextAttempt = Date.now() + this.timeout
+      this.nextAttempt = Date.now() + this.resetTimeout
     }
 
     this.log('Failure')
+  }
+
+  async wrapperTimeout() {
+    return new Promise<T>((resolve, reject) => {
+      setTimeout(() => reject(new Error('Process Timeout')), this.timeout)
+      this.failerFunction()
+        .then((response) => resolve(response))
+        .catch((e) => reject(e))
+    })
   }
 
   public async exec() {
@@ -82,7 +93,7 @@ export class CircuitBreaker<T> {
     }
 
     try {
-      const response = await this.failerFunction()
+      const response = await this.wrapperTimeout()
       this.success()
       if (this.onSuccess) this.onSuccess(response)
     } catch (err: any) {
