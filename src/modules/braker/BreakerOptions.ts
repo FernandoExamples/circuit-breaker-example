@@ -9,8 +9,6 @@ export class BreakerOptions<T> {
     public failureThreshold?: number,
     public successThreshold?: number,
     public resetTimeout?: number,
-    public timeout?: number,
-    public fallback?: (err: any) => void,
-    public onSuccess?: (response: T) => void
+    public timeout?: number
   ) {}
 }
