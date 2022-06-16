@@ -5,6 +5,7 @@ import logger from '../../helpers/logger'
 interface Options extends CircuitBreaker.Options {
   maxRetries: number
   maxTimeWait: number
+  name?: string
 }
 
 export class RetryCircuitBraker<TI extends unknown[] = unknown[], TR = unknown> {
@@ -17,13 +18,12 @@ export class RetryCircuitBraker<TI extends unknown[] = unknown[], TR = unknown> 
   constructor(action: (...args: TI) => Promise<TR>, options: Options) {
     this.circuitBreaker = new CircuitBreaker(action, options)
     this.options = options
+    this.options.name = this.options.name || ''
 
-    this.circuitBreaker.on('open', () => logger.info('Breaker is Open'))
-    this.circuitBreaker.on('halfOpen', () => {
-      logger.info('Breaker is Half Open')
-    })
+    this.circuitBreaker.on('open', () => logger.info(`Breaker ${this.options.name} is Open`))
+    this.circuitBreaker.on('halfOpen', () => logger.info(`Breaker ${this.options.name} is Half Open`))
     this.circuitBreaker.on('close', () => {
-      logger.info('Breaker is Close')
+      logger.info(`Breaker ${this.options.name} is Close`)
       this.delayMillis = 2000
       this.retryCount = 0
     })
