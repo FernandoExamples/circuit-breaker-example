@@ -5,7 +5,7 @@ import logger from '../../helpers/logger'
 
 async function asyncFunctionThatCouldFail() {
   logger.debug('Haciendo peticion')
-  await delay(3000)
+  await delay(2000)
   const response = await axios.get('http://localhost:3000')
   return true
 }
@@ -13,17 +13,19 @@ async function asyncFunctionThatCouldFail() {
 const retryCircuit = new RetryCircuitBraker(asyncFunctionThatCouldFail, {
   timeout: 6000,
   errorThresholdPercentage: 50,
-  resetTimeout: 2000,
+  resetTimeout: 8000,
   maxRetries: 3,
+  maxTimeWait: 50000,
 })
 
-retryCircuit
-  .tryAction()
-  .then((a) => console.log(`La respesta: ${a}`))
-  .catch((e) => logger.error(e.message))
-  .finally(() => {
+let time = 1000
+
+for (let i = 0; i < 10; i++) {
+  setTimeout(() => {
     retryCircuit
       .tryAction()
       .then((a) => console.log(`La respesta: ${a}`))
       .catch((e) => logger.error(e.message))
-  })
+  }, 1)
+  time += 500
+}

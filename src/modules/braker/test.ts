@@ -16,21 +16,24 @@ const retryCircuit = new RetryCircuitBraker(failureFunction, {
   resetTimeout: 12000,
   successThreshold: 2,
   failureThreshold: 2,
+  maxTimeWait: 50000,
 })
 
 retryCircuit
   .tryAction()
   .then((a) => console.log(`La respesta: ${a}`))
   .catch((e) => logger.error(e.message))
-  .finally(() => {
-    retryCircuit
-      .tryAction()
-      .then((a) => console.log(`La respesta: ${a}`))
-      .catch((e) => logger.error(e.message))
-      .finally(() => {
-        retryCircuit
-          .tryAction()
-          .then((a) => console.log(`La respesta: ${a}`))
-          .catch((e) => logger.error(e.message))
-      })
-  })
+
+setTimeout(() => {
+  retryCircuit
+    .tryAction()
+    .then((a) => console.log(`La respesta: ${a}`))
+    .catch((e) => logger.error(e.message))
+}, 2000)
+
+setTimeout(() => {
+  retryCircuit
+    .tryAction()
+    .then((a) => console.log(`La respesta: ${a}`))
+    .catch((e) => logger.error(e.message))
+}, 4000)

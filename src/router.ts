@@ -3,7 +3,7 @@ const router = Router()
 
 //importing all routes here
 router.get('/', (req, res) => {
-  if (Math.random() > 0.7) {
+  if (Math.random() > 0.8) {
     res.status(200).send('Success!')
   } else {
     res.status(400).send('Failed!')

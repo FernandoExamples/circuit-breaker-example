@@ -4,6 +4,7 @@ import logger from '../../helpers/logger'
 
 interface Options extends CircuitBreaker.Options {
   maxRetries: number
+  maxTimeWait: number
 }
 
 export class RetryCircuitBraker<TI extends unknown[] = unknown[], TR = unknown> {
@@ -30,6 +31,7 @@ export class RetryCircuitBraker<TI extends unknown[] = unknown[], TR = unknown> 
 
   public async tryAction(...args: TI): Promise<TR> {
     if (this.retryCount >= this.options.maxRetries) {
+      this.retryCount = 0
       throw new Error(`Max retries has reached: ${this.options.maxRetries}`)
     }
 
@@ -43,7 +45,9 @@ export class RetryCircuitBraker<TI extends unknown[] = unknown[], TR = unknown> 
 
       if (!this.circuitBreaker.opened) {
         this.retryCount += 1
-        this.delayMillis *= 2
+
+        this.delayMillis =
+          this.delayMillis * 2 < this.options.maxTimeWait ? (this.delayMillis *= 2) : this.options.maxTimeWait
       }
 
       return await this.tryAction(...args)

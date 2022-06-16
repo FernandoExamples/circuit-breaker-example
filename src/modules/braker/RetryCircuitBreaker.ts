@@ -4,6 +4,7 @@ import { BreakerOptions, CircuitBreaker } from './CircuitBraker'
 
 interface Options extends BreakerOptions {
   maxRetries: number
+  maxTimeWait: number
 }
 
 export class RetryCircuitBraker<TI extends unknown[] = unknown[], TR = unknown> {
@@ -43,7 +44,8 @@ export class RetryCircuitBraker<TI extends unknown[] = unknown[], TR = unknown> 
 
       if (!this.circuitBreaker.opened) {
         this.retryCount += 1
-        this.delayMillis *= 2
+        this.delayMillis =
+          this.delayMillis * 2 < this.options.maxTimeWait ? (this.delayMillis *= 2) : this.options.maxTimeWait
       }
 
       return await this.tryAction(...args)
