@@ -41,14 +41,14 @@ export class RetryCircuitBraker<TI extends unknown[] = unknown[], TR = unknown> 
     } catch (error: any) {
       logger.warn(`Retrying Action due to ${error.message}. Waiting ${this.delayMillis} millis`)
 
-      await delay(this.delayMillis)
-
       if (!this.circuitBreaker.opened) {
         this.retryCount += 1
 
         this.delayMillis =
           this.delayMillis * 2 < this.options.maxTimeWait ? (this.delayMillis *= 2) : this.options.maxTimeWait
       }
+
+      await delay(this.delayMillis)
 
       return await this.tryAction(...args)
     }

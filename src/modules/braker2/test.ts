@@ -15,17 +15,14 @@ const retryCircuit = new RetryCircuitBraker(asyncFunctionThatCouldFail, {
   errorThresholdPercentage: 50,
   resetTimeout: 8000,
   maxRetries: 3,
-  maxTimeWait: 50000,
+  maxTimeWait: 10000,
 })
 
-let time = 1000
-
-for (let i = 0; i < 10; i++) {
+for (let i = 0; i < 3; i++) {
   setTimeout(() => {
     retryCircuit
       .tryAction()
       .then((a) => console.log(`La respesta: ${a}`))
       .catch((e) => logger.error(e.message))
   }, 1)
-  time += 500
 }
