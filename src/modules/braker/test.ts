@@ -12,13 +12,25 @@ async function failureFunction() {
 
 const retryCircuit = new RetryCircuitBraker(failureFunction, {
   timeout: 2000,
-  maxRetries: 3,
+  maxRetries: 2,
   resetTimeout: 12000,
   successThreshold: 2,
-  failureThreshold: 4,
+  failureThreshold: 2,
 })
 
 retryCircuit
   .tryAction()
   .then((a) => console.log(`La respesta: ${a}`))
   .catch((e) => logger.error(e.message))
+  .finally(() => {
+    retryCircuit
+      .tryAction()
+      .then((a) => console.log(`La respesta: ${a}`))
+      .catch((e) => logger.error(e.message))
+      .finally(() => {
+        retryCircuit
+          .tryAction()
+          .then((a) => console.log(`La respesta: ${a}`))
+          .catch((e) => logger.error(e.message))
+      })
+  })

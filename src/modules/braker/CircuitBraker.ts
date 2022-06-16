@@ -1,9 +1,9 @@
 import EventEmitter from 'events'
 
 export enum BreakerState {
-  GREEN = 'GREEN',
-  RED = 'RED',
-  YELLOW = 'YELLOW',
+  CLOSED = 'CLOSED',
+  OPEN = 'OPEN',
+  HALF_OPEN = 'HALF_OPEN',
 }
 
 export class BreakerOptions {
@@ -35,7 +35,7 @@ export class CircuitBreaker<AR extends unknown[], R> extends EventEmitter {
   constructor(failerFunction: (...args: AR) => Promise<R>, options?: BreakerOptions) {
     super()
     this.failerFunction = failerFunction
-    this.state = BreakerState.GREEN
+    this.state = BreakerState.CLOSED
 
     this.failureCount = 0
     this.successCount = 0
@@ -59,12 +59,12 @@ export class CircuitBreaker<AR extends unknown[], R> extends EventEmitter {
   private success() {
     this.failureCount = 0
 
-    if (this.state == BreakerState.YELLOW) {
+    if (this.state == BreakerState.HALF_OPEN) {
       this.successCount++
 
       if (this.successCount > this.successThreshold) {
         this.successCount = 0
-        this.state = BreakerState.GREEN
+        this.state = BreakerState.CLOSED
         this.emit('close')
       }
     }
@@ -75,8 +75,8 @@ export class CircuitBreaker<AR extends unknown[], R> extends EventEmitter {
   private failure() {
     this.failureCount++
 
-    if (this.failureCount >= this.failureThreshold) {
-      this.state = BreakerState.RED
+    if (this.failureCount >= this.failureThreshold || this.state == BreakerState.HALF_OPEN) {
+      this.state = BreakerState.OPEN
       this.nextAttempt = Date.now() + this.resetTimeout
 
       this.emit('open')
@@ -96,17 +96,18 @@ export class CircuitBreaker<AR extends unknown[], R> extends EventEmitter {
   }
 
   public async exec(...args: AR) {
-    if (this.state === BreakerState.RED) {
+    if (this.state === BreakerState.OPEN) {
       if (this.nextAttempt <= Date.now()) {
-        this.state = BreakerState.YELLOW
+        this.state = BreakerState.HALF_OPEN
         this.emit('halfOpen')
       } else {
-        throw new Error(`Circuit is suspended: ${this.state}`)
+        throw new Error(`Circuit is suspended!`)
       }
     }
 
     try {
       const response = await this.wrapperTimeout(...args)
+      this.success()
       return response
     } catch (err: any) {
       this.failure()
@@ -115,6 +116,6 @@ export class CircuitBreaker<AR extends unknown[], R> extends EventEmitter {
   }
 
   get opened() {
-    return this.state === BreakerState.RED
+    return this.state === BreakerState.OPEN
   }
 }
