@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test1": "node build/modules/breaker/test.js",
+    "test2": "node build/modules/breaker2/test.js",
     "dev": "tsc-watch --onSuccess \"node build/index\"",
     "clean": "rm -rf build",
     "build": "tsc",
