@@ -1,6 +1,19 @@
 import EventEmitter from 'events'
-import { BreakerOptions } from './BreakerOptions'
-import { BreakerState } from './BreakerOptions'
+
+export enum BreakerState {
+  GREEN = 'GREEN',
+  RED = 'RED',
+  YELLOW = 'YELLOW',
+}
+
+export class BreakerOptions {
+  constructor(
+    public failureThreshold?: number,
+    public successThreshold?: number,
+    public resetTimeout?: number,
+    public timeout?: number
+  ) {}
+}
 
 export class CircuitBreaker<AR extends unknown[], R> extends EventEmitter {
   private state: BreakerState
@@ -19,7 +32,7 @@ export class CircuitBreaker<AR extends unknown[], R> extends EventEmitter {
   //callbacks
   private failerFunction: (...args: AR) => Promise<R>
 
-  constructor(failerFunction: (...args: AR) => Promise<R>, options?: BreakerOptions<R>) {
+  constructor(failerFunction: (...args: AR) => Promise<R>, options?: BreakerOptions) {
     super()
     this.failerFunction = failerFunction
     this.state = BreakerState.GREEN
@@ -37,7 +50,6 @@ export class CircuitBreaker<AR extends unknown[], R> extends EventEmitter {
   private log(result: string): void {
     console.table({
       Result: result,
-      Timestamp: Date.now(),
       Successes: this.successCount,
       Failures: this.failureCount,
       State: this.state,
@@ -100,5 +112,9 @@ export class CircuitBreaker<AR extends unknown[], R> extends EventEmitter {
       this.failure()
       throw err
     }
+  }
+
+  get opened() {
+    return this.state === BreakerState.RED
   }
 }

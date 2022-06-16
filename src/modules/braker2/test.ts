@@ -1,6 +1,6 @@
 import { delay } from '../../helpers/datetime'
 import axios from 'axios'
-import { RetryCircuitBraker } from './RetryCircuitBraker'
+import { RetryCircuitBraker } from './RetryCircuitBreaker'
 import logger from '../../helpers/logger'
 
 async function asyncFunctionThatCouldFail() {
@@ -13,7 +13,7 @@ async function asyncFunctionThatCouldFail() {
 const retryCircuit = new RetryCircuitBraker(asyncFunctionThatCouldFail, {
   timeout: 3000,
   errorThresholdPercentage: 50,
-  resetTimeout: 12000,
+  resetTimeout: 5000,
   maxRetries: 3,
 })
 
